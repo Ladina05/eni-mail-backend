@@ -1,0 +1,51 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: eni-mail
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/eni_mail}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:ladinantsa}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: ${SHOW_SQL:false}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+  jackson:
+    time-zone: Indian/Antananarivo
+
+app:
+  jwt:
+    # Remplacer cette valeur en production par une clé Base64 secrète d'au moins 256 bits.
+    secret: ${JWT_SECRET:VGhpc0lzQURldmVsb3BtZW50U2VjcmV0S2V5Rm9yRW5pTWFpbEFwcDIwMjY=}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  frontend-urls: ${FRONTEND_URLS:${FRONTEND_URL:http://localhost:5173,http://localhost:5174}}
+  storage:
+    location: ${UPLOAD_DIR:./uploads}
+  admin:
+    email: ${APP_ADMIN_EMAIL:ladinaandriah@gmail.com}
+    password: ${APP_ADMIN_PASSWORD:ladinantsa}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

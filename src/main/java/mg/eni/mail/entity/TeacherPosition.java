@@ -1,0 +1,6 @@
+package mg.eni.mail.entity;
+
+public enum TeacherPosition {
+    FULL_PROFESSOR, PROFESSOR, ASSOCIATE_PROFESSOR,
+    HIGHER_EDUCATION_RESEARCH_ASSISTANT, ADJUNCT_LECTURER
+}
