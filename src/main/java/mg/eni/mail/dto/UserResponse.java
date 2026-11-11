@@ -5,4 +5,5 @@ public record UserResponse(UUID id, String firstName, String lastName, String em
                            Role role, boolean active, String department, String promotion,
                            StudyLevel studyLevel, AcademicMention academicMention,
                            AcademicPath academicPath, TeacherPosition teacherPosition,
-                           String institutionalResponsibility, String staffPosition, String studentNumber) {}
+                           String institutionalResponsibility, String staffPosition, String studentNumber,
+                           String profilePhotoUrl) {}

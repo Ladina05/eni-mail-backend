@@ -88,7 +88,9 @@ public class AuthService {
                 user.getAcademicPath(),
                 user.getTeacherPosition(),
                 user.getInstitutionalResponsibility(),
-                user.getStaffPosition(), user.getStudentNumber()
+                user.getStaffPosition(), user.getStudentNumber(),
+                user.getProfilePhotoStoredName() == null ? null
+                    : "/api/users/" + user.getId() + "/profile-photo?v=" + user.getProfilePhotoStoredName()
         );
     }
 }

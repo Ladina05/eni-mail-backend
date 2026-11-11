@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @Service
 public class UserService {
@@ -21,14 +23,17 @@ public class UserService {
     private final NotificationRepository notifications;
     private final GroupRepository groups;
     private final GroupMemberRepository groupMembers;
+    private final AccountEmailService accountEmails;
+    private final FileStorageService storage;
 
     public UserService(UserRepository users, DepartmentRepository departments,
                        PromotionRepository promotions, PasswordEncoder encoder, MessageRepository messages,
                        RecipientRepository recipients, NotificationRepository notifications, GroupRepository groups,
-                       GroupMemberRepository groupMembers) {
+                       GroupMemberRepository groupMembers, AccountEmailService accountEmails, FileStorageService storage) {
         this.users = users; this.departments = departments; this.promotions = promotions; this.encoder = encoder;
         this.messages = messages; this.recipients = recipients; this.notifications = notifications;
         this.groups = groups; this.groupMembers = groupMembers;
+        this.accountEmails = accountEmails; this.storage = storage;
     }
 
     @Transactional
@@ -39,7 +44,8 @@ public class UserService {
         user.setFirstName(request.firstName().trim());
         user.setLastName(request.lastName().trim());
         user.setEmail(request.email().trim().toLowerCase());
-        user.setPassword(encoder.encode(request.password()));
+        String temporaryPassword = generateTemporaryPassword();
+        user.setPassword(encoder.encode(temporaryPassword));
         user.setRole(request.role());
         applyInstitutionalProfile(user, request);
         if (request.departmentId() != null)
@@ -48,7 +54,9 @@ public class UserService {
         if (request.promotionId() != null)
             user.setPromotion(promotions.findById(request.promotionId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Promotion introuvable")));
-        return AuthService.toResponse(users.save(user));
+        User saved = users.saveAndFlush(user);
+        accountEmails.sendNewAccountCredentials(saved.getEmail(), saved.getFirstName(), temporaryPassword);
+        return AuthService.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -95,6 +103,7 @@ public class UserService {
         notifications.deleteByUserId(id);
         recipients.deleteByUserId(id);
         for (Message message : messages.findBySenderId(id)) message.setSender(null);
+        storage.delete(user.getProfilePhotoStoredName());
         users.delete(user);
     }
 
@@ -144,4 +153,37 @@ public class UserService {
     }
 
     private String trimToNull(String value) { return value == null || value.isBlank() ? null : value.trim(); }
+
+    private String generateTemporaryPassword() {
+        byte[] bytes = new byte[15];
+        new SecureRandom().nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    @Transactional
+    public UserResponse uploadProfilePhoto(String email, org.springframework.web.multipart.MultipartFile file) {
+        User user = users.findByEmailIgnoreCase(email)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+        String storedName = storage.storeProfilePhoto(file);
+        String previous = user.getProfilePhotoStoredName();
+        user.setProfilePhotoStoredName(storedName);
+        user.setProfilePhotoContentType(file.getContentType());
+        storage.delete(previous);
+        return AuthService.toResponse(users.save(user));
+    }
+
+    @Transactional
+    public UserResponse deleteProfilePhoto(String email) {
+        User user = users.findByEmailIgnoreCase(email)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+        storage.delete(user.getProfilePhotoStoredName());
+        user.setProfilePhotoStoredName(null);
+        user.setProfilePhotoContentType(null);
+        return AuthService.toResponse(users.save(user));
+    }
+
+    @Transactional(readOnly = true)
+    public User profilePhoto(UUID id) {
+        return users.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+    }
 }
