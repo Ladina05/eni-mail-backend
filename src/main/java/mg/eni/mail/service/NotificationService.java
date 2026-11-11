@@ -13,11 +13,10 @@ import java.util.*;
 @Service
 public class NotificationService {
     private final NotificationRepository notifications;
-    private final UserRepository users;
     private final SimpMessagingTemplate messaging;
 
-    public NotificationService(NotificationRepository notifications, UserRepository users, SimpMessagingTemplate messaging) {
-        this.notifications = notifications; this.users = users; this.messaging = messaging;
+    public NotificationService(NotificationRepository notifications, SimpMessagingTemplate messaging) {
+        this.notifications = notifications; this.messaging = messaging;
     }
 
     @Transactional
