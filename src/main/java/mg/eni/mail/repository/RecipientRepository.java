@@ -11,4 +11,6 @@ public interface RecipientRepository extends JpaRepository<Recipient, UUID> {
     boolean existsByMessageIdAndUserEmailIgnoreCase(UUID messageId, String email);
     void deleteByMessageIdAndUserEmailIgnoreCase(UUID messageId, String email);
     void deleteByUserEmailIgnoreCaseAndDeletedTrue(String email);
+    void deleteByUserId(UUID userId);
+    long countByUserEmailIgnoreCaseAndReadFalseAndDeletedFalseAndArchivedFalse(String email);
 }

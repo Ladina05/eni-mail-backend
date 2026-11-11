@@ -26,6 +26,11 @@ public class MessageController {
     @GetMapping("/inbox")
     public List<MessageResponse> inbox(Authentication auth) { return service.inbox(auth.getName()); }
 
+    @GetMapping("/unread-count")
+    public Map<String, Long> unreadCount(Authentication auth) {
+        return Map.of("count", service.unreadCount(auth.getName()));
+    }
+
     @GetMapping("/sent")
     public List<MessageResponse> sent(Authentication auth) { return service.sent(auth.getName()); }
 

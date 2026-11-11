@@ -11,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-import java.nio.file.Files;
 import java.util.*;
 
 @RestController
@@ -32,7 +31,10 @@ public class AttachmentController {
     public AttachmentResponse upload(@PathVariable UUID messageId, @RequestParam("file") MultipartFile file, Authentication auth) {
         Message message = messages.findById(messageId)
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Message introuvable"));
-        if (!message.getSender().getEmail().equalsIgnoreCase(auth.getName()))
+        boolean isSender = message.getSender() != null
+            ? message.getSender().getEmail().equalsIgnoreCase(auth.getName())
+            : message.getSenderEmailSnapshot() != null && message.getSenderEmailSnapshot().equalsIgnoreCase(auth.getName());
+        if (!isSender)
             throw new ApiException(HttpStatus.FORBIDDEN, "Les pièces jointes ne peuvent être ajoutées qu'à vos brouillons");
         String stored = storage.store(file);
         Attachment a = new Attachment(); a.setMessage(message);
@@ -49,7 +51,9 @@ public class AttachmentController {
                                              Authentication auth) {
         Message message = messages.findById(messageId)
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Message introuvable"));
-        boolean allowed = message.getSender().getEmail().equalsIgnoreCase(auth.getName())
+        boolean allowed = (message.getSender() != null
+            ? message.getSender().getEmail().equalsIgnoreCase(auth.getName())
+            : message.getSenderEmailSnapshot() != null && message.getSenderEmailSnapshot().equalsIgnoreCase(auth.getName()))
             || recipients.existsByMessageIdAndUserEmailIgnoreCase(messageId, auth.getName());
         if (!allowed) throw new ApiException(HttpStatus.FORBIDDEN, "Accès refusé");
         Attachment a = attachments.findByIdAndMessageId(attachmentId, messageId)

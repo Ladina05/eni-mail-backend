@@ -6,4 +6,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findTop50ByUserEmailIgnoreCaseOrderByCreatedAtDesc(String email);
     long countByUserEmailIgnoreCaseAndReadFalse(String email);
     Optional<Notification> findByIdAndUserEmailIgnoreCase(UUID id, String email);
+    void deleteByUserId(UUID userId);
+    void deleteByMessageIdAndUserEmailIgnoreCase(UUID messageId, String email);
 }

@@ -5,4 +5,5 @@ import java.util.UUID;
 import java.util.List;
 public interface GroupRepository extends JpaRepository<Group, UUID> {
     List<Group> findByCreatedByEmailIgnoreCase(String email);
+    List<Group> findByCreatedById(UUID userId);
 }

@@ -13,11 +13,10 @@ import java.util.*;
 @Service
 public class NotificationService {
     private final NotificationRepository notifications;
-    private final UserRepository users;
     private final SimpMessagingTemplate messaging;
 
-    public NotificationService(NotificationRepository notifications, UserRepository users, SimpMessagingTemplate messaging) {
-        this.notifications = notifications; this.users = users; this.messaging = messaging;
+    public NotificationService(NotificationRepository notifications, SimpMessagingTemplate messaging) {
+        this.notifications = notifications; this.messaging = messaging;
     }
 
     @Transactional
@@ -47,6 +46,18 @@ public class NotificationService {
         Notification n = notifications.findByIdAndUserEmailIgnoreCase(id, email)
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Notification introuvable"));
         n.setRead(true);
+    }
+
+    @Transactional
+    public void removeForMessage(UUID messageId, String email) {
+        notifications.deleteByMessageIdAndUserEmailIgnoreCase(messageId, email);
+    }
+
+    @Transactional
+    public void delete(UUID id, String email) {
+        Notification n = notifications.findByIdAndUserEmailIgnoreCase(id, email)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Notification introuvable"));
+        notifications.delete(n);
     }
 
     private static NotificationResponse toResponse(Notification n) {

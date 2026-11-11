@@ -19,8 +19,14 @@ public class Message {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id")
     private User sender;
+
+    @Column(length = 180)
+    private String senderEmailSnapshot;
+
+    @Column(length = 170)
+    private String senderNameSnapshot;
 
     @Column(nullable = false, length = 250)
     private String subject;

@@ -24,4 +24,9 @@ public class NotificationController {
     public Map<String,String> read(@PathVariable UUID id, Authentication auth) {
         service.markRead(id, auth.getName()); return Map.of("message", "Notification marquée comme lue");
     }
+
+    @DeleteMapping("/{id}")
+    public Map<String, String> delete(@PathVariable UUID id, Authentication auth) {
+        service.delete(id, auth.getName()); return Map.of("message", "Notification supprimée");
+    }
 }
