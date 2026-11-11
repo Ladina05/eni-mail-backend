@@ -23,6 +23,17 @@ spring:
       max-request-size: 30MB
   jackson:
     time-zone: Indian/Antananarivo
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: aroimmojirama@gmail.com
+    password: phgs meud xsze bqvm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 app:
   jwt:
@@ -34,8 +45,10 @@ app:
   storage:
     location: ${UPLOAD_DIR:./uploads}
   admin:
-    email: ${APP_ADMIN_EMAIL:ladinaandriah@gmail.com}
+    email: ${APP_ADMIN_EMAIL:ladinaandriantsoa@gmail.com}
     password: ${APP_ADMIN_PASSWORD:ladinantsa}
+  mail:
+    from: aroimmojirama@gmail.com
 
 management:
   endpoints:

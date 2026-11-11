@@ -109,7 +109,7 @@ public class MessageService {
     @Transactional
     public MessageResponse get(UUID id, String email) {
         Message m = messages.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Message introuvable"));
-        if (!m.getSender().getEmail().equalsIgnoreCase(email) &&
+        if ((m.getSender() == null || !m.getSender().getEmail().equalsIgnoreCase(email)) &&
             !recipients.existsByMessageIdAndUserEmailIgnoreCase(id, email))
             throw new ApiException(HttpStatus.FORBIDDEN, "Vous ne pouvez pas consulter ce message");
         Recipient r = recipients.findByMessageIdAndUserEmailIgnoreCase(id, email).orElse(null);
@@ -210,6 +210,8 @@ public class MessageService {
         return new MessageResponse(m.getId(), m.getSubject(), m.getBody(),
             m.getSender() == null ? m.getSenderEmailSnapshot() : m.getSender().getEmail(),
             m.getSender() == null ? m.getSenderNameSnapshot() : m.getSender().getFirstName() + " " + m.getSender().getLastName(),
+            m.getSender() == null || m.getSender().getProfilePhotoStoredName() == null ? null
+                : "/api/users/" + m.getSender().getId() + "/profile-photo",
             m.getSentAt(), read, starred, archived, m.isDraft(), messageAttachments);
     }
 }

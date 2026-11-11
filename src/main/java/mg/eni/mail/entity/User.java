@@ -75,6 +75,12 @@ public class User implements UserDetails {
     @Column(unique = true, length = 40)
     private String studentNumber;
 
+    @Column(length = 255)
+    private String profilePhotoStoredName;
+
+    @Column(length = 120)
+    private String profilePhotoContentType;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

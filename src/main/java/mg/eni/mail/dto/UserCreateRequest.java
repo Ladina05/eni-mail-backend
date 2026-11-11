@@ -6,7 +6,6 @@ public record UserCreateRequest(
     @NotBlank @Size(max=80) String firstName,
     @NotBlank @Size(max=80) String lastName,
     @NotBlank @Email String email,
-    @NotBlank @Size(min=10, max=100) String password,
     @NotNull Role role,
     UUID departmentId,
     UUID promotionId,

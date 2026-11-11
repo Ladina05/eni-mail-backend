@@ -17,7 +17,7 @@ public class FileStorageService {
         "application/pdf",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "image/png", "image/jpeg", "text/plain"
+        "image/png", "image/jpeg", "image/webp", "text/plain"
     );
     private final Path root;
 
@@ -48,6 +48,19 @@ public class FileStorageService {
         Path file = root.resolve(storedName).normalize();
         if (!file.startsWith(root)) throw new ApiException(HttpStatus.BAD_REQUEST, "Chemin invalide");
         return file;
+    }
+
+    public String storeProfilePhoto(MultipartFile file) {
+        String type = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
+        if (!Set.of("image/png", "image/jpeg", "image/webp").contains(type))
+            throw new ApiException(HttpStatus.BAD_REQUEST, "La photo doit Ãªtre au format PNG, JPEG ou WebP");
+        return store(file);
+    }
+
+    public void delete(String storedName) {
+        if (storedName == null || storedName.isBlank()) return;
+        try { Files.deleteIfExists(load(storedName)); }
+        catch (IOException e) { throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossible de supprimer le fichier"); }
     }
 
     private String contentTypeFromName(String name) {
