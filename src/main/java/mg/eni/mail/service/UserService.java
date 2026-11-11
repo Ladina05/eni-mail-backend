@@ -16,10 +16,19 @@ public class UserService {
     private final DepartmentRepository departments;
     private final PromotionRepository promotions;
     private final PasswordEncoder encoder;
+    private final MessageRepository messages;
+    private final RecipientRepository recipients;
+    private final NotificationRepository notifications;
+    private final GroupRepository groups;
+    private final GroupMemberRepository groupMembers;
 
     public UserService(UserRepository users, DepartmentRepository departments,
-                       PromotionRepository promotions, PasswordEncoder encoder) {
+                       PromotionRepository promotions, PasswordEncoder encoder, MessageRepository messages,
+                       RecipientRepository recipients, NotificationRepository notifications, GroupRepository groups,
+                       GroupMemberRepository groupMembers) {
         this.users = users; this.departments = departments; this.promotions = promotions; this.encoder = encoder;
+        this.messages = messages; this.recipients = recipients; this.notifications = notifications;
+        this.groups = groups; this.groupMembers = groupMembers;
     }
 
     @Transactional
@@ -78,6 +87,14 @@ public class UserService {
     @Transactional
     public void delete(UUID id) {
         User user = users.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+        for (Group group : groups.findByCreatedById(id)) {
+            groupMembers.deleteByGroupId(group.getId());
+            groups.delete(group);
+        }
+        groupMembers.deleteByUserId(id);
+        notifications.deleteByUserId(id);
+        recipients.deleteByUserId(id);
+        for (Message message : messages.findBySenderId(id)) message.setSender(null);
         users.delete(user);
     }
 

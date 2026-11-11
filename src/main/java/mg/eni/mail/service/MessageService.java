@@ -30,6 +30,8 @@ public class MessageService {
 
         Message message = new Message();
         message.setSender(sender);
+        message.setSenderEmailSnapshot(sender.getEmail());
+        message.setSenderNameSnapshot(sender.getFirstName() + " " + sender.getLastName());
         message.setSubject(request.subject().trim());
         message.setBody(request.body());
         message.setDraft(false);
@@ -88,6 +90,11 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
+    public long unreadCount(String email) {
+        return recipients.countByUserEmailIgnoreCaseAndReadFalseAndDeletedFalseAndArchivedFalse(email);
+    }
+
+    @Transactional(readOnly = true)
     public List<MessageResponse> sent(String email) {
         return messages.findBySenderEmailIgnoreCaseAndDraftFalseOrderBySentAtDesc(email)
             .stream().map(m -> response(m, false, false, false)).toList();
@@ -107,6 +114,7 @@ public class MessageService {
             throw new ApiException(HttpStatus.FORBIDDEN, "Vous ne pouvez pas consulter ce message");
         Recipient r = recipients.findByMessageIdAndUserEmailIgnoreCase(id, email).orElse(null);
         if (r != null && !m.isDraft()) r.setRead(true);
+        if (r != null && !m.isDraft()) notifications.removeForMessage(id, email);
         return response(m, r != null && r.isRead(), r != null && r.isStarred(), r != null && r.isArchived());
     }
 
@@ -115,7 +123,7 @@ public class MessageService {
         Recipient r = recipients.findByMessageIdAndUserEmailIgnoreCase(id, email)
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Message introuvable dans votre boîte"));
         switch (action) {
-            case "read" -> r.setRead(true);
+            case "read" -> { r.setRead(true); notifications.removeForMessage(id, email); }
             case "unread" -> r.setRead(false);
             case "star" -> r.setStarred(!r.isStarred());
             case "archive" -> r.setArchived(true);
@@ -200,7 +208,8 @@ public class MessageService {
         List<AttachmentResponse> messageAttachments = attachments.findByMessageId(m.getId()).stream()
             .map(a -> new AttachmentResponse(a.getId(), a.getOriginalName(), a.getContentType(), a.getSize(), a.getUploadedAt())).toList();
         return new MessageResponse(m.getId(), m.getSubject(), m.getBody(),
-            m.getSender().getEmail(), m.getSender().getFirstName() + " " + m.getSender().getLastName(),
+            m.getSender() == null ? m.getSenderEmailSnapshot() : m.getSender().getEmail(),
+            m.getSender() == null ? m.getSenderNameSnapshot() : m.getSender().getFirstName() + " " + m.getSender().getLastName(),
             m.getSentAt(), read, starred, archived, m.isDraft(), messageAttachments);
     }
 }

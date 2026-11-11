@@ -6,4 +6,5 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findBySenderEmailIgnoreCaseAndDraftTrueOrderByCreatedAtDesc(String email);
     List<Message> findBySenderEmailIgnoreCaseAndDraftFalseOrderBySentAtDesc(String email);
     Optional<Message> findByIdAndSenderEmailIgnoreCaseAndDraftTrue(UUID id, String email);
+    List<Message> findBySenderId(UUID senderId);
 }

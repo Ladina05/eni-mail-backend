@@ -49,6 +49,18 @@ public class NotificationService {
         n.setRead(true);
     }
 
+    @Transactional
+    public void removeForMessage(UUID messageId, String email) {
+        notifications.deleteByMessageIdAndUserEmailIgnoreCase(messageId, email);
+    }
+
+    @Transactional
+    public void delete(UUID id, String email) {
+        Notification n = notifications.findByIdAndUserEmailIgnoreCase(id, email)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Notification introuvable"));
+        notifications.delete(n);
+    }
+
     private static NotificationResponse toResponse(Notification n) {
         return new NotificationResponse(n.getId(), n.getTitle(), n.getContent(), n.isRead(), n.getCreatedAt(), n.getMessage() == null ? null : n.getMessage().getId());
     }
