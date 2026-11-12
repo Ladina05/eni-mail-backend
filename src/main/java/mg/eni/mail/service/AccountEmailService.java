@@ -20,19 +20,19 @@ public class AccountEmailService {
     public void sendNewAccountCredentials(String recipient, String firstName, String temporaryPassword) {
         if (from == null || from.isBlank())
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,
-                "L'envoi d'e-mail n'est pas configurÃ© : dÃ©finissez SMTP_USERNAME, SMTP_PASSWORD et SMTP_FROM");
+                "L'envoi d'e-mail n'est pas configuré : définissez SMTP_USERNAME, SMTP_PASSWORD et SMTP_FROM");
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(from);
             message.setTo(recipient);
             message.setSubject("Vos identifiants ENI Mail");
-            message.setText("Bonjour " + firstName + ",\n\nVotre compte ENI Mail vient d'Ãªtre crÃ©Ã©.\n\n"
+            message.setText("Bonjour " + firstName + ",\n\nVotre compte ENI Mail vient d'être créé.\n\n"
                 + "Adresse e-mail : " + recipient + "\nMot de passe temporaire : " + temporaryPassword
                 + "\n\nConnectez-vous puis modifiez ce mot de passe depuis votre profil.\n\nENI Mail");
             mailSender.send(message);
         } catch (Exception e) {
             throw new ApiException(HttpStatus.BAD_GATEWAY,
-                "Impossible d'envoyer les identifiants par e-mail. Le compte n'a pas Ã©tÃ© crÃ©Ã©.");
+                "Impossible d'envoyer les identifiants par e-mail. Le compte n'a pas été créé.");
         }
     }
 }
